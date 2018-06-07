@@ -1,153 +1,211 @@
 //----------------------------------------------------------------
 //-- Robo Otto
-//-- Adaptado por Luciana Rocha Cardoso
+//-- Adaptado por Luciana Rocha Cardoso e Reinaldo Carlos Matias
 //-- 22/05/2018
 //-----------------------------------------------------------------
-//-- Primeira versão de teste para projeto de OTTO escolar simples
+//-- Versão Colaborativa
+//-----------------------------------------------------------------
+//
+//  Siglas de Referencias
+//  SE = Superior Esquerdo
+//  IE = Inferior Esquerdo
+//  SD = Superior Direito
+//  ID = Inferior Esquerdo
+//
 //-----------------------------------------------------------------
 
-//nao foi usado estas bibliotecas
-//#include <Oscillator.h>
-//#include <US.h>
-//#include <Otto.h>
-//Otto Otto;  //This is Otto!
-//---------------------------------------------------------
-
+//-----------------------------------------------------------------
+//-- DECLARAÇÃO DE BIBLITOECAS
+//-----------------------------------------------------------------
 #include <IRremote.h>
 #include <Buzzer.h>
 #include <Servo.h>
+//-----------------------------------------------------------------
 
-//---------------------------------------------------------
-//-- Primeiro passo: Certificar que os pinos dos servos estão na posição correta
+
+//-----------------------------------------------------------------
+//-- Pinagem dos Servos
+//-----------------------------------------------------------------
 /*
-         ---------------
-        |     O   O     |
-        |---------------|
-  YR 1==> |               | <== YL 2
-         ---------------
-            ||     ||
-  RR 3==>   -----   ------  <== RL 4
-         |-----   ------|
+           ---------------
+          |     O   O     |
+          |---------------|
+  SD 1==> |               | <== SE 2
+           ---------------
+              ||     ||
+  ID 3==>   -----   ------  <== IE 4
+           |-----   ------|
 
-  servo1 [3]
-  servo2 [2]
-  servo3 [5]
-  servo4 [4]
+  SERVO   PINO
+  servo1  [3]
+  servo2  [2]
+  servo3  [5]
+  servo4  [4]
 */
 
-//-----servo
+
+//-----------------------------------------------------------------
+//-- DECLARAÇÃO DE PINAGENS
+//-----------------------------------------------------------------
+int pinoRecepitorIR = 11; //Receptor do Controle
+int ledVermelho = 12;     //Led do Nariz
+int pin_buzzer = 10;      //Buzzer
+//-----------------------------------------------------------------
+
+//-----------------------------------------------------------------
+//-- DECLARAÇÃO DE VARIAVEIS
+//-----------------------------------------------------------------
+int i;                    //ITERATOR
+const int posIniSD = 67;
+const int posIniSE = 62;
+const int posIniID = 80;
+const int posIniIE = 65;
+//-----------------------------------------------------------------
+
+
+//-----------------------------------------------------------------
+//-- DECLARAÇÃO DE RECURSOS
+//-----------------------------------------------------------------
 Servo servo1, servo2, servo3, servo4;
-//---------
-
-int pinoRecepitorIR = 11;
-int ledVermelho = 12;
-
-// Definindo o código de cada ação que deverá ser realizada
-
-int pin_buzzer = 10; //porta do buzzer
 Buzzer Alarme(pin_buzzer);
 IRrecv irrecv(pinoRecepitorIR);
 decode_results results;
-int i;
+//-----------------------------------------------------------------
 
+//-----------------------------------------------------------------
+//-- Inicialização
+//-----------------------------------------------------------------
 void setup()
 {
   Serial.begin(9600);
-  servo1.attach(3); // anexa o servomotor (físico), no pino 3, ao objeto servo1 (lógico), cima direita
-  servo2.attach(2); // anexa o servomotor (físico), no pino 2, ao objeto servo2 (lógico), cima esquerda
-  servo3.attach(5); // anexa o servomotor (físico), no pino 5, ao objeto servo3 (lógico), baixo direita
-  servo4.attach(4); // anexa o servomotor (físico), no pino 4, ao objeto servo4 (lógico), baixa esquerda
+  servo1.attach(3); // anexa o servomotor (físico), no pino 3, ao objeto servo1 (lógico), SD
+  servo2.attach(2); // anexa o servomotor (físico), no pino 2, ao objeto servo2 (lógico), SE
+  servo3.attach(5); // anexa o servomotor (físico), no pino 5, ao objeto servo3 (lógico), ID
+  servo4.attach(4); // anexa o servomotor (físico), no pino 4, ao objeto servo4 (lógico), IE
   pinMode(ledVermelho, OUTPUT); // Definindo os pinos dos leds como saida
-
   irrecv.enableIRIn(); // Inicializa o receptor IR do controle remoto
 }
 
 void loop()
 {
-  servo1.write(69); //aqui o motor ficará a 0 graus, cima direita
-  servo2.write(62); //aqui o motor ficará a 0 graus, cima esquerda
-  servo3.write(85); //aqui o motor ficará a 0 graus, baixa direita
-  servo4.write(65); //aqui o motor ficará a 0 graus
-
+  servosPosicaoInicial();
   delay(500);
-
-  if (irrecv.decode(&results)) // Executa caso receba algum códico
+  
+  if (irrecv.decode(&results))     // Executa caso seja precionado algum botão no contole
   {
+
     Serial.println(results.value, HEX);
 
+    if (results.value == 0xFF629D) //Verifica se a tecla /\ foi acionada
+    {
+
+    }
+    
     if (results.value == 0xFF22DD) //Verifica se a tecla < foi acionada
     {
-      digitalWrite(ledVermelho, HIGH); //Acende o led vermelho
+
     }
+    
     if (results.value == 0xFFC23D) //Verifica se a tecla > foi acionada
     {
-      digitalWrite(ledVermelho, LOW); //Apaga o led vermelho
+
     }
+
+    if (results.value == 0xFF02FD) //Verifica se a tecla \/ foi acionada
+    {
+
+    }
+    
     if (results.value == 0xFF6897) //Verifica se a tecla 1 foi acionada
     {
-      for (i = 0; i < 5; i++) {
-        digitalWrite(ledVermelho, HIGH); //Acende o led vermelho
-        Alarme.beep(500);     //beep de 500 ms
-        digitalWrite(ledVermelho, LOW); //Acende o led vermelho
-        delay(500);         //aguarda 500 mseg
-      }
+      //Chama o programa piscaNariz
+      piscaNariz(3, 500, 250);
     }
 
-    //danca lado esquerdo
-    if (results.value == 0xFF02FD) { //Verifica se a tecla Ok foi acionada
-      for (i = 0; i < 3; i++) {
-        servo3.write(-45); //aqui o motor ficará em 90 graus
-        servo4.write(-45); //aqui o motor ficará em 90 graus
-        delay(1500);
-        servo3.write(90); //aqui o motor ficará em 90 graus
-        servo4.write(90); //aqui o motor ficará em 90 graus
-        delay(1500);
-      }
+    if (results.value == 0xFF9867) //Verifica se a tecla 2 foi acionada
+    {
+
     }
 
-    //danca lado direito
-    if (results.value == 0xFF9867) { //Verifica se a tecla 2 foi acionada
-      for (i = 0; i < 3; i++) {
-        servo3.write(160); //aqui o motor ficará em 45 graus
-        servo4.write(145); //aqui o motor ficará em 45 graus
-        delay(1500);
-        servo3.write(85); //aqui o motor ficará em 90 graus
-        servo4.write(65); //aqui o motor ficará em 90 graus
-        delay(1500);
-      }
+    if (results.value == 0xFFB04F) //Verifica se a tecla 3 foi acionada
+    {
+
     }
 
-    //usar o sensor de distancia para andar ainda faze o teste
-    if (results.value == 0xFF629D) { //Verifica se a tecla para cima ^ foi acionada
-      for (i = 0; i < 3; i++) {
-        //perna direita
-        servo1.write(130); //aqui o motor ficará em 45 graus, vira
-        delay(500);
-        servo3.write(30); //aqui o motor ficará em 45 graus, levanta
-        delay(500);
-        servo1.write(69); //aqui o motor ficará em 90 graus, desvira
-        delay(500);
-        servo3.write(85); //aqui o motor ficará em 90 graus, abaixar
-        delay(500);
+    if (results.value == 0xFF30CF) //Verifica se a tecla 4 foi acionada
+    {
 
-        //perna esquerda
-        servo2.write(10); //aqui o motor ficará em 45 graus, vira
-        delay(500);
-        servo4.write(120); //aqui o motor ficará em 45 graus, levanta
-        delay(500);
-        servo2.write(62); //aqui o motor ficará em 90 graus, desvira
-        delay(500);
-        servo4.write(65); //aqui o motor ficará em 90 graus, abaixa
-
-        delay(1000);
-      }
     }
 
+    if (results.value == 0xFF18E7) //Verifica se a tecla 5 foi acionada
+    {
 
+    }
 
+    if (results.value == 0xFF7A85) //Verifica se a tecla 6 foi acionada
+    {
 
-    irrecv.resume();  //Le o valor da próxima tecla pressionada
+    }
+
+    if (results.value == 0xFF10EF) //Verifica se a tecla 7 foi acionada
+    {
+
+    }
+
+    if (results.value == 0xFF38C7) //Verifica se a tecla 8 foi acionada
+    {
+
+    }
+
+    if (results.value == 0xFF5AA5) //Verifica se a tecla 9 foi acionada
+    {
+
+    }
+
+    if (results.value == 0xFF4AB5) //Verifica se a tecla 0 foi acionada
+    {
+
+    }
+
+    if (results.value == 0xFF42BD) //Verifica se a tecla * foi acionada
+    {
+
+    }
+
+    if (results.value == 0xFF52AD) //Verifica se a tecla # foi acionada
+    {
+
+    }
+
+  irrecv.resume();  //Le o valor da tecla pressionada
+
   }
 }
 
+
+//-----------------------------------------------------------------
+//-- Posiciona os Motores na posição inicial
+//-----------------------------------------------------------------
+void servosPosicaoInicial() {
+  servo1.write(posIniSD); //aqui o motor ficará a 0 graus, SD
+  servo2.write(posIniSE); //aqui o motor ficará a 0 graus, SE
+  servo3.write(posIniID); //aqui o motor ficará a 0 graus, ID
+  servo4.write(posIniIE); //aqui o motor ficará a 0 graus, IE
+}
+
+
+//-----------------------------------------------------------------
+//-- Acende e apaga o led do Nariz, conforme parametros onde:
+//-- vezes    = Número de vezes que o nariz irá pisca
+//-- tempoluz = Tempo em Milissegundos que o led ficara aceso e o bip tocará
+//-- tempopausa = Tempo em Milissegundos que o led permanecerá apagado
+//-----------------------------------------------------------------
+void piscaNariz(int vezes, int tempoluz, int tempopausa) {
+  for (i = 0; i < vezes; i++) {       //Repete o número de vezes definido
+    digitalWrite(ledVermelho, HIGH);  //Acende o LED
+    Alarme.beep(tempoluz);            //Aciona o beep
+    digitalWrite(ledVermelho, LOW);   //Apaga o LED
+    delay(tempopausa);                //Aguarda para repetir
+  }
+}
 
